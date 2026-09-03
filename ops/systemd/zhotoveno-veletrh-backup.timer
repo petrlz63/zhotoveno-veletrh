@@ -1,0 +1,11 @@
+[Unit]
+Description=Daily Zhotoveno veletrh SQLite backup
+
+[Timer]
+OnCalendar=daily
+Persistent=true
+RandomizedDelaySec=20m
+Unit=zhotoveno-veletrh-backup.service
+
+[Install]
+WantedBy=timers.target

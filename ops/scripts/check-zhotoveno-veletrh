@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+set -euo pipefail
+umask 077
+
+health_url="https://veletrh.zhotoveno.cz/api/health"
+database_path="/srv/zhotoveno-veletrh/shared/data/fair-reminders.sqlite"
+
+fail() { printf 'FAIL: %s\n' "$*" >&2; exit 1; }
+code="$(curl -sS --max-time 10 -o /dev/null -w '%{http_code}' "$health_url")" || fail "health endpoint request failed"
+[ "$code" = "200" ] || fail "health endpoint returned HTTP $code"
+
+container="$(docker ps --filter 'name=zhotoveno-veletrh' --format '{{.ID}}' | head -n 1)"
+[ -n "$container" ] || fail "veletrh container is not running"
+[ "$(docker inspect -f '{{.State.Health.Status}}' "$container")" = "healthy" ] || fail "veletrh container is not healthy"
+
+if [ -e "$database_path" ]; then
+  [ "$(sqlite3 -batch -readonly "$database_path" 'PRAGMA quick_check;')" = "ok" ] || fail "database quick_check failed"
+fi
+
+disk_used="$(df -P / | awk 'NR == 2 { gsub(/%/, "", $5); print $5 }')"
+[ "$disk_used" -lt 85 ] || fail "root disk usage is ${disk_used}%"
+printf '%s\n' "PASS: zhotoveno veletrh health ok"

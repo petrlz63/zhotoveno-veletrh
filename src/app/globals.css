@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+:root {
+  --zh-navy: #061634;
+  --zh-blue: #0969f3;
+  --zh-blue-hover: #075bd8;
+  --zh-sky: #e9f6fe;
+  --zh-surface: #f7fbff;
+  --zh-border: #d7e8f7;
+  --zh-muted: #4d5d78;
+  --zh-soft: #72809a;
+}
+
+@theme inline {
+  --color-brand-navy: var(--zh-navy);
+  --color-brand-primary: var(--zh-blue);
+  --color-brand-primary-hover: var(--zh-blue-hover);
+  --color-brand-sky: var(--zh-sky);
+  --color-brand-border: var(--zh-border);
+  --color-brand-muted: var(--zh-muted);
+  --color-brand-soft: var(--zh-soft);
+  --color-brand-ring: rgb(17 152 245 / 0.25);
+  --font-sans: var(--font-geist-sans);
+}
+
+* { box-sizing: border-box; }
+html { min-width: 320px; }
+body { margin: 0; color: var(--zh-navy); background: radial-gradient(circle at 8% 0%, rgb(40 184 255 / 0.15), transparent 32rem), radial-gradient(circle at 93% 6%, rgb(9 105 243 / 0.12), transparent 36rem), var(--zh-surface); font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif; }
+::selection { background: rgb(17 152 245 / 0.22); }
+.form-card { border: 1px solid var(--zh-border); border-radius: 1.5rem; background: #fff; padding: 1rem; box-shadow: 0 18px 50px rgb(6 22 52 / 0.08); }
+.spinner { width: 1rem; height: 1rem; border: 2px solid rgb(255 255 255 / 0.45); border-top-color: #fff; border-radius: 999px; animation: spin 0.7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (min-width: 640px) { .form-card { padding: 1.75rem; } }

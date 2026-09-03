@@ -1,0 +1,21 @@
+veletrh.zhotoveno.cz {
+    import security_headers
+    encode zstd gzip
+
+    log {
+        output file /var/log/caddy/veletrh.zhotoveno.cz.access.log {
+            roll_size 10MiB
+            roll_keep 10
+            roll_keep_for 720h
+        }
+        format json
+    }
+
+    reverse_proxy zhotoveno-veletrh:3013 {
+        # Do not let an internet client forge the rate-limit IP bucket.
+        header_up -X-Forwarded-For
+        header_up X-Forwarded-For {remote_host}
+        header_up -X-Real-IP
+        header_up X-Real-IP {remote_host}
+    }
+}

@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+set -euo pipefail
+umask 077
+
+database_path="/srv/zhotoveno-veletrh/shared/data/fair-reminders.sqlite"
+backup_dir="/var/backups/zhotoveno-veletrh"
+lock_file="/run/zhotoveno-veletrh-backup.lock"
+
+install -d -o root -g root -m 0700 "$backup_dir"
+exec 9>"$lock_file"
+flock -n 9 || { printf '%s\n' "backup already running; skipping"; exit 0; }
+[ -e "$database_path" ] || { printf '%s\n' "database not created yet; skipping"; exit 0; }
+[ -r "$database_path" ] || { printf '%s\n' "database exists but is not readable" >&2; exit 1; }
+
+timestamp="$(date -u +%Y%m%dT%H%M%SZ)"
+temporary_database="$(mktemp "$backup_dir/.fair-reminders-${timestamp}.XXXXXX.sqlite")"
+archive="$backup_dir/fair-reminders-${timestamp}.sqlite.gz"
+checksum="${archive}.sha256"
+trap 'rm -f -- "$temporary_database" "$temporary_database-wal" "$temporary_database-shm"' EXIT
+
+sqlite3 -batch "$database_path" <<SQL
+.timeout 10000
+.backup $temporary_database
+SQL
+
+[ "$(sqlite3 -batch -readonly "$temporary_database" 'PRAGMA integrity_check;')" = "ok" ] || { printf '%s\n' "backup integrity_check failed" >&2; exit 1; }
+gzip -c -n -- "$temporary_database" > "$archive"
+chmod 0600 "$archive"
+(cd "$backup_dir" && sha256sum "$(basename "$archive")") > "$checksum"
+chmod 0600 "$checksum"
+find "$backup_dir" -maxdepth 1 -type f \( -name 'fair-reminders-*.sqlite.gz' -o -name 'fair-reminders-*.sqlite.gz.sha256' \) -mtime +7 -delete
+printf '%s\n' "backup created: $(basename "$archive")"

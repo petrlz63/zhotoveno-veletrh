@@ -1,0 +1,11 @@
+[Unit]
+Description=Backup Zhotoveno veletrh SQLite database
+After=local-fs.target
+
+[Service]
+Type=oneshot
+User=root
+Group=root
+UMask=0077
+NoNewPrivileges=true
+ExecStart=/usr/local/sbin/backup-zhotoveno-veletrh
