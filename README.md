@@ -1,6 +1,6 @@
 # Zhotoveno veletrh
 
-Samostatná Next.js aplikace pro `veletrh.zhotoveno.cz`. Ukládá veletržní kontakty do vlastní SQLite databáze a po přijetí odesílá jednorázový připomínací e-mail. Nevytváří účet, firmu, OTP ani session návštěvníka.
+Samostatná Next.js aplikace pro `veletrh.zhotoveno.cz`. Ukládá veletržní předregistrace do vlastní SQLite databáze, kopíruje registrační údaje přes chráněné API do PostgreSQL full webu a odesílá jednorázový připomínací e-mail. Nevytváří účet, firmu, OTP ani session návštěvníka.
 
 ## Lokální start
 
@@ -22,6 +22,7 @@ Vzor obsahuje `.env.example`.
 - `FAIR_ORIGIN`: kanonický původ pro stejný origin formulářových requestů.
 - `FAIR_IP_HASH_SECRET`: HMAC tajemství pro anti-spam hash IP adresy.
 - `FAIR_ADMIN_KEY_HASH`, `FAIR_ADMIN_SESSION_SECRET`: přístup do administrace.
+- `FAIR_POSTGRES_SYNC_URL`, `FAIR_POSTGRES_SYNC_TOKEN`: chráněný serverový import předregistrace do full webu; výpadek synchronizace neblokuje uložení do SQLite ani připomínací e-mail.
 - `BREVO_*`: odesílatel a credentials pro reálnou e-mailovou dopravu.
 - `NEXT_PUBLIC_*_URL`: běžné odkazy v e-mailu, bez tokenu nebo OTP.
 

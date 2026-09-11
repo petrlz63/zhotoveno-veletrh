@@ -131,8 +131,8 @@ export function FairReminderForm() {
   if (status === "success") {
     return <section className="form-card text-center" role="status" aria-live="polite">
       <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-brand-sky text-2xl font-black text-brand-primary" aria-hidden="true">✓</span>
-      <h2 ref={successRef} tabIndex={-1} className="mt-5 text-2xl font-black tracking-tight text-brand-navy outline-none">Hotovo! Připomenutí jsme odeslali.</h2>
-      <p className="mt-3 text-base leading-7 text-brand-muted">E-mail pro {maskEmail(submittedEmail)} by měl dorazit během několika minut. Pokud ho neuvidíte, zkontrolujte také složku Hromadné nebo Spam.</p>
+      <h2 ref={successRef} tabIndex={-1} className="mt-5 text-2xl font-black tracking-tight text-brand-navy outline-none">První krok máte hotový.</h2>
+      <p className="mt-3 text-base leading-7 text-brand-muted">Na {maskEmail(submittedEmail)} jsme poslali informace, jak pokračovat v registraci. Pokud e-mail neuvidíte, zkontrolujte také složku Hromadné nebo Spam.</p>
       <button type="button" onClick={reset} className="mt-6 h-12 rounded-xl border border-brand-primary px-5 text-base font-bold text-brand-primary transition hover:bg-brand-sky focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-ring">Zadat další kontakt</button>
     </section>;
   }
@@ -157,13 +157,13 @@ export function FairReminderForm() {
     </div>
     <div className={`mt-5 ${errors.consent ? "rounded-xl border border-red-400 p-3" : ""}`}>
       <div className="flex items-start gap-3"><input ref={consentRef} id="consent" name="consent" type="checkbox" checked={values.consent} onChange={(event) => updateValue("consent", event.target.checked)} required aria-required="true" aria-invalid={Boolean(errors.consent)} aria-describedby={errors.consent ? "consent-error" : undefined} className={`mt-1 h-5 w-5 shrink-0 rounded ${errors.consent ? "border-red-400 focus-visible:ring-red-300" : "border-brand-border"} text-brand-primary focus-visible:ring-4`} />
-        <label htmlFor="consent" className="text-base leading-6 text-brand-muted">Souhlasím se zasláním informačního e-mailu o službě Zhotoveno a se zpracováním uvedených údajů pro tento účel. <Link href="/ochrana-soukromi" className="font-semibold text-brand-primary underline">Zásady ochrany osobních údajů</Link> <span className="text-red-500">*</span></label>
+        <label htmlFor="consent" className="text-base leading-6 text-brand-muted">Souhlasím se zasláním informačního e-mailu o službě Zhotoveno a se zpracováním uvedených údajů pro předvyplnění při následném dokončení registrace firemního účtu Zhotoveno B2B. <Link href="/ochrana-soukromi" className="font-semibold text-brand-primary underline">Zásady ochrany osobních údajů</Link> <span className="text-red-500">*</span></label>
       </div>
       {errors.consent && <p id="consent-error" className="mt-1.5 text-xs text-red-500">{errors.consent}</p>}
     </div>
-    <p className="mt-5 text-sm leading-6 text-brand-muted">Odesláním formuláře ještě nevytváříte účet ani firemní profil.</p>
+    <p className="mt-5 text-sm leading-6 text-brand-muted">Odesláním uložíte první krok registrace. Účet ani firemní profil nevzniknou, dokud neověříte e-mail a registraci nedokončíte.</p>
     <button type="submit" disabled={status === "loading"} className="mt-5 flex h-[52px] w-full items-center justify-center gap-2 rounded-xl bg-brand-primary px-5 text-base font-black text-white shadow-[0_16px_34px_rgba(9,105,243,0.25)] transition hover:bg-brand-primary-hover focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-ring disabled:cursor-not-allowed disabled:opacity-70">
-      {status === "loading" && <span className="spinner" aria-hidden="true" />} {status === "loading" ? "Odesíláme…" : "Poslat připomenutí"}
+      {status === "loading" && <span className="spinner" aria-hidden="true" />} {status === "loading" ? "Ukládáme…" : "Uložit první krok"}
     </button>
     {submitError && <p role="alert" className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-600">{submitError}</p>}
   </form>;

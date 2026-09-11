@@ -13,13 +13,13 @@ export function buildReminderText(urls: NonNullable<ReturnType<typeof getReminde
   return [
     "Dobrý den,",
     "",
-    "děkujeme, že jste se u nás zastavili. Jak jsme slíbili, posíláme vám připomenutí služby Zhotoveno.",
+    "děkujeme, že jste se u nás zastavili. První krok registrace do Zhotoveno B2B máte uložený.",
     "",
     "Otevřete Zhotoveno na webu nebo v mobilní aplikaci a přihlaste se pomocí svého e-mailu. Přihlášení potvrdíte jednorázovým kódem, který vám zašleme e-mailem.",
     "",
-    "Po přihlášení vás provedeme vytvořením firemního profilu, ve kterém doplníte údaje o firmě, své obory a specializace. Díky tomu vám budeme moci zobrazovat relevantní poptávky.",
+    "Po přihlášení stejným e-mailem poznáme, že v registraci pokračujete. Provedeme vás vytvořením firemního profilu, ve kterém doplníte údaje o firmě, své obory a specializace.",
     "",
-    `Začít na webu: ${urls.web}`,
+    `Dokončit registraci na webu: ${urls.web}`,
     `Stáhnout v App Store: ${urls.appStore}`,
     `Stáhnout na Google Play: ${urls.googlePlay}`,
     "",
@@ -43,10 +43,10 @@ export function buildReminderHtml(urls: NonNullable<ReturnType<typeof getReminde
       <div style="padding:28px 32px;background:#e9f6fe;"><p style="margin:0;color:#0969f3;font-size:14px;font-weight:700;">Zhotoveno pro firmy</p><h1 style="margin:8px 0 0;font-size:28px;line-height:1.2;">Děkujeme za setkání</h1></div>
       <div style="padding:32px;font-size:16px;line-height:1.65;">
         <p style="margin:0 0 18px;">Dobrý den,</p>
-        <p style="margin:0 0 18px;">děkujeme, že jste se u nás zastavili. Jak jsme slíbili, posíláme vám připomenutí služby Zhotoveno.</p>
+        <p style="margin:0 0 18px;">děkujeme, že jste se u nás zastavili. První krok registrace do Zhotoveno B2B máte uložený.</p>
         <p style="margin:0 0 18px;">Otevřete Zhotoveno na webu nebo v mobilní aplikaci a přihlaste se pomocí svého e-mailu. Přihlášení potvrdíte jednorázovým kódem, který vám zašleme e-mailem.</p>
-        <p style="margin:0 0 24px;">Po přihlášení vás provedeme vytvořením firemního profilu, ve kterém doplníte údaje o firmě, své obory a specializace. Díky tomu vám budeme moci zobrazovat relevantní poptávky.</p>
-        <p style="margin:0 0 24px;"><a href="${webUrl}" style="display:inline-block;background:#0969f3;border-radius:12px;color:#ffffff;font-weight:700;padding:14px 22px;text-decoration:none;">Začít na webu</a></p>
+        <p style="margin:0 0 24px;">Po přihlášení stejným e-mailem poznáme, že v registraci pokračujete. Provedeme vás vytvořením firemního profilu, ve kterém doplníte údaje o firmě, své obory a specializace.</p>
+        <p style="margin:0 0 24px;"><a href="${webUrl}" style="display:inline-block;background:#0969f3;border-radius:12px;color:#ffffff;font-weight:700;padding:14px 22px;text-decoration:none;">Dokončit registraci na webu</a></p>
         <p style="margin:0 0 8px;"><a href="${appStoreUrl}" style="color:#075bd8;font-weight:700;">Stáhnout v App Store</a></p>
         <p style="margin:0 0 24px;"><a href="${googlePlayUrl}" style="color:#075bd8;font-weight:700;">Stáhnout na Google Play</a></p>
         <p style="margin:0 0 2px;">Těšíme se na spolupráci.</p><p style="margin:0;">Tým Zhotoveno<br>Stačí poptat. Zhotoveno.</p>
@@ -84,7 +84,7 @@ export async function sendReminderEmail({ toEmail }: SendReminderInput): Promise
           },
         } : {}),
         to: [{ email: toEmail }],
-        subject: "Vyzkoušejte Zhotoveno pro svou firmu",
+        subject: "Dokončete registraci do Zhotoveno B2B",
         textContent: buildReminderText(urls),
         htmlContent: buildReminderHtml(urls),
       }),

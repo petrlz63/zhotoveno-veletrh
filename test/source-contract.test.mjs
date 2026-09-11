@@ -12,6 +12,8 @@ test("form keeps required field validation and shared-device reset", async () =>
   assert.match(source, /Zadat další kontakt/);
   assert.match(source, /setValues\(initialValues\)/);
   assert.match(source, /disabled=\{status === "loading"\}/);
+  assert.match(source, /předvyplnění při následném dokončení registrace/);
+  assert.match(source, /Uložit první krok/);
 });
 
 test("reminder endpoint validates and does not return cached responses", async () => {
@@ -23,10 +25,19 @@ test("reminder endpoint validates and does not return cached responses", async (
   assert.match(source, /markReminderFailed/);
 });
 
-test("email has no sign-in token and contains each standard destination", async () => {
+test("email continues registration without a sign-in token and contains each standard destination", async () => {
   const source = await read("src/lib/reminder-mailer.ts");
-  assert.match(source, /Začít na webu/);
+  assert.match(source, /Dokončit registraci na webu/);
   assert.match(source, /Stáhnout v App Store/);
   assert.match(source, /Stáhnout na Google Play/);
   assert.doesNotMatch(source, /otpCode|one-time token|managementToken/);
+});
+
+test("accepted preregistration is copied through the protected PostgreSQL sync", async () => {
+  const route = await read("src/app/api/pripomenuti/route.ts");
+  const sync = await read("src/lib/fair-preregistration-sync.ts");
+  assert.match(route, /syncFairPreregistration/);
+  assert.match(sync, /authorization: `Bearer \$\{config\.token\}`/);
+  assert.match(sync, /sourceSubmissionId: record\.submissionId/);
+  assert.doesNotMatch(sync, /ipHash|userAgent|utmSource|utmMedium|utmCampaign/);
 });

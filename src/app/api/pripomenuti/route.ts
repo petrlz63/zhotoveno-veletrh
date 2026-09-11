@@ -2,6 +2,7 @@ import { createHmac } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 
 import { getFairConfig } from "@/lib/fair-config";
+import { syncFairPreregistration } from "@/lib/fair-preregistration-sync";
 import { beginReminderAttempt, createReminder, getReminder, isRateLimited, markReminderFailed, markReminderSent } from "@/lib/fair-storage";
 import { sendReminderEmail } from "@/lib/reminder-mailer";
 import { isSubmissionId, readReminderFields, validateReminderFields } from "@/lib/reminder-validation";
@@ -95,6 +96,17 @@ export async function POST(request: NextRequest) {
       const now = new Date().toISOString();
       createReminder({ submissionId: fields.submissionId, email: fields.email, companyName: fields.companyName || null, industrySlug: industry.slug, industryLabel: industry.label, source: "veletrh.zhotoveno.cz", eventName: getFairConfig().eventName, consentAcceptedAt: now, consentVersion: getFairConfig().consentVersion, utmSource: fields.utmSource, utmMedium: fields.utmMedium, utmCampaign: fields.utmCampaign, ipHash, userAgent: readUserAgent(request), createdAt: now });
       if (!beginReminderAttempt(fields.submissionId, now)) return response({ ok: false, message: "Odeslání se ještě zpracovává. Vyčkejte prosím chvíli a stránku znovu neodesílejte." }, 409);
+    }
+
+    const reminder = getReminder(fields.submissionId);
+    if (reminder) {
+      const syncResult = await syncFairPreregistration(reminder);
+      if (!syncResult.ok) {
+        console.error("[fair-preregistration-sync] sync failed", {
+          submissionId: fields.submissionId,
+          reason: syncResult.reason,
+        });
+      }
     }
 
     const delivery = await sendReminderEmail({ toEmail: fields.email });
