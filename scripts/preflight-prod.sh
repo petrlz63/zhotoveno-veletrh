@@ -20,9 +20,15 @@ has_value() {
   [ -n "$value" ] && [ "$value" != '""' ] && [ "$value" != "''" ]
 }
 
-for key in FAIR_EVENT_NAME FAIR_ORIGIN FAIR_IP_HASH_SECRET FAIR_ADMIN_KEY_HASH FAIR_ADMIN_SESSION_SECRET FAIR_POSTGRES_SYNC_URL FAIR_POSTGRES_SYNC_TOKEN BREVO_API_KEY BREVO_SENDER_EMAIL BREVO_SENDER_NAME NEXT_PUBLIC_ZHOTOVENO_WEB_URL NEXT_PUBLIC_APP_STORE_URL NEXT_PUBLIC_GOOGLE_PLAY_URL NEXT_PUBLIC_PRIVACY_URL; do
+for key in FAIR_EVENT_NAME FAIR_ORIGIN FAIR_IP_HASH_SECRET FAIR_ADMIN_KEY_HASH FAIR_ADMIN_SESSION_SECRET BREVO_API_KEY BREVO_SENDER_EMAIL BREVO_SENDER_NAME NEXT_PUBLIC_ZHOTOVENO_WEB_URL NEXT_PUBLIC_APP_STORE_URL NEXT_PUBLIC_GOOGLE_PLAY_URL NEXT_PUBLIC_PRIVACY_URL; do
   has_value "$key" || fail "$key must be present and non-empty in env file"
 done
+
+sync_url_configured=0
+sync_token_configured=0
+has_value FAIR_POSTGRES_SYNC_URL && sync_url_configured=1
+has_value FAIR_POSTGRES_SYNC_TOKEN && sync_token_configured=1
+[ "$sync_url_configured" = "$sync_token_configured" ] || fail "FAIR_POSTGRES_SYNC_URL and FAIR_POSTGRES_SYNC_TOKEN must be configured together"
 
 grep -Eq '^[[:space:]]*(export[[:space:]]+)?ZHOTOVENO_MOCK_EMAILS=1([[:space:]]|$)' "$env_file" && fail "ZHOTOVENO_MOCK_EMAILS must not be enabled in production" || true
 

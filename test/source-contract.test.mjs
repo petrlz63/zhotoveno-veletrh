@@ -38,9 +38,14 @@ test("email continues registration without a sign-in token and contains each sta
 test("accepted preregistration is copied through the protected PostgreSQL sync", async () => {
   const route = await read("src/app/api/pripomenuti/route.ts");
   const sync = await read("src/lib/fair-preregistration-sync.ts");
+  const config = await read("src/lib/fair-config.ts");
+  const preflight = await read("scripts/preflight-prod.sh");
   assert.match(route, /syncFairPreregistration/);
+  assert.match(route, /syncResult\.reason !== "configuration"/);
   assert.match(sync, /authorization: `Bearer \$\{config\.token\}`/);
   assert.match(sync, /sourceSubmissionId: record\.submissionId/);
   assert.match(sync, /heardAboutUs: record\.heardAboutUs/);
   assert.doesNotMatch(sync, /ipHash|userAgent|utmSource|utmMedium|utmCampaign/);
+  assert.match(config, /if \(!url && !token\) return null/);
+  assert.match(preflight, /FAIR_POSTGRES_SYNC_URL and FAIR_POSTGRES_SYNC_TOKEN must be configured together/);
 });

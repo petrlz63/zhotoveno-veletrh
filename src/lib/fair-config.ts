@@ -35,15 +35,26 @@ export function getProductionConfigError() {
   if (!config.origin || !config.ipHashSecret) return "missing fair security configuration";
   if (!getAdminConfig().keyHash || !getAdminConfig().sessionSecret) return "missing fair admin configuration";
   if (!getReminderUrls()) return "invalid reminder URL configuration";
-  if (!getFairPreregistrationSyncConfig()) return "invalid preregistration sync configuration";
+  if (getFairPreregistrationSyncConfigError()) return "invalid preregistration sync configuration";
   if (!readEnvironment("BREVO_API_KEY") || !readEnvironment("BREVO_SENDER_EMAIL") || !readEnvironment("BREVO_SENDER_NAME")) return "missing mail configuration";
   return null;
 }
 
-export function getFairPreregistrationSyncConfig() {
+export function getFairPreregistrationSyncConfigError() {
   const url = readEnvironment("FAIR_POSTGRES_SYNC_URL");
   const token = readEnvironment("FAIR_POSTGRES_SYNC_TOKEN");
-  if (!url || !token || Buffer.byteLength(token) < 32 || !isValidHttpUrl(url)) return null;
+  if (!url && !token) return null;
+  if (!url || !token || Buffer.byteLength(token) < 32 || !isValidHttpUrl(url)) {
+    return "invalid preregistration sync configuration";
+  }
+  return null;
+}
+
+export function getFairPreregistrationSyncConfig() {
+  if (getFairPreregistrationSyncConfigError()) return null;
+  const url = readEnvironment("FAIR_POSTGRES_SYNC_URL");
+  const token = readEnvironment("FAIR_POSTGRES_SYNC_TOKEN");
+  if (!url || !token) return null;
   return { url, token };
 }
 

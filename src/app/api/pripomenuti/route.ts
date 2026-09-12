@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
     const reminder = getReminder(fields.submissionId);
     if (reminder) {
       const syncResult = await syncFairPreregistration(reminder);
-      if (!syncResult.ok) {
+      if (!syncResult.ok && syncResult.reason !== "configuration") {
         console.error("[fair-preregistration-sync] sync failed", {
           submissionId: fields.submissionId,
           reason: syncResult.reason,
