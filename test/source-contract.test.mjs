@@ -9,6 +9,8 @@ test("form keeps required field validation and shared-device reset", async () =>
   const source = await read("src/components/FairReminderForm.tsx");
   assert.match(source, /Pracovní e-mail/);
   assert.match(source, /Hlavní obor/);
+  assert.match(source, /Odkud jste se o nás dozvěděli\?/);
+  assert.match(source, /maxLength=\{300\}/);
   assert.match(source, /Zadat další kontakt/);
   assert.match(source, /setValues\(initialValues\)/);
   assert.match(source, /disabled=\{status === "loading"\}/);
@@ -39,5 +41,6 @@ test("accepted preregistration is copied through the protected PostgreSQL sync",
   assert.match(route, /syncFairPreregistration/);
   assert.match(sync, /authorization: `Bearer \$\{config\.token\}`/);
   assert.match(sync, /sourceSubmissionId: record\.submissionId/);
+  assert.match(sync, /heardAboutUs: record\.heardAboutUs/);
   assert.doesNotMatch(sync, /ipHash|userAgent|utmSource|utmMedium|utmCampaign/);
 });

@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
       if (isRateLimited(fields.email, ipHash, rateLimitSince)) return NextResponse.json({ ok: false, message: "Odesílání je na chvíli omezené. Zkuste to prosím později." }, { status: 429, headers: { ...noStoreHeaders, "Retry-After": "600" } });
       const industry = serviceCategoriesBySlug.get(fields.industry as ServiceCategorySlug)!;
       const now = new Date().toISOString();
-      createReminder({ submissionId: fields.submissionId, email: fields.email, companyName: fields.companyName || null, industrySlug: industry.slug, industryLabel: industry.label, source: "veletrh.zhotoveno.cz", eventName: getFairConfig().eventName, consentAcceptedAt: now, consentVersion: getFairConfig().consentVersion, utmSource: fields.utmSource, utmMedium: fields.utmMedium, utmCampaign: fields.utmCampaign, ipHash, userAgent: readUserAgent(request), createdAt: now });
+      createReminder({ submissionId: fields.submissionId, email: fields.email, companyName: fields.companyName || null, industrySlug: industry.slug, industryLabel: industry.label, heardAboutUs: fields.heardAboutUs || null, source: "veletrh.zhotoveno.cz", eventName: getFairConfig().eventName, consentAcceptedAt: now, consentVersion: getFairConfig().consentVersion, utmSource: fields.utmSource, utmMedium: fields.utmMedium, utmCampaign: fields.utmCampaign, ipHash, userAgent: readUserAgent(request), createdAt: now });
       if (!beginReminderAttempt(fields.submissionId, now)) return response({ ok: false, message: "Odeslání se ještě zpracovává. Vyčkejte prosím chvíli a stránku znovu neodesílejte." }, 409);
     }
 

@@ -12,6 +12,7 @@ export type ReminderRecord = {
   companyName: string | null;
   industrySlug: string;
   industryLabel: string;
+  heardAboutUs: string | null;
   source: string;
   eventName: string;
   consentAcceptedAt: string;
@@ -37,6 +38,19 @@ export type ReminderListRecord = ReminderRecord & {
 let database: Database.Database | null = null;
 let activePath: string | null = null;
 
+function ensureHeardAboutUsColumn(db: Database.Database) {
+  const hasColumn = () =>
+    (db.pragma("table_info(fair_reminders)") as Array<{ name: string }>).some(
+      (column) => column.name === "heard_about_us",
+    );
+  if (hasColumn()) return;
+  try {
+    db.exec("ALTER TABLE fair_reminders ADD COLUMN heard_about_us TEXT");
+  } catch (error) {
+    if (!hasColumn()) throw error;
+  }
+}
+
 function getDatabase() {
   const path = getFairConfig().databasePath;
   if (database && activePath === path) return database;
@@ -54,6 +68,7 @@ function getDatabase() {
       company_name TEXT,
       industry_slug TEXT NOT NULL,
       industry_label TEXT NOT NULL,
+      heard_about_us TEXT,
       source TEXT NOT NULL,
       event_name TEXT NOT NULL,
       consent_accepted_at TEXT NOT NULL,
@@ -75,6 +90,7 @@ function getDatabase() {
     CREATE INDEX IF NOT EXISTS fair_reminders_email_created_at_idx ON fair_reminders (email, created_at);
     CREATE INDEX IF NOT EXISTS fair_reminders_ip_created_at_idx ON fair_reminders (ip_hash, created_at);
   `);
+  ensureHeardAboutUsColumn(db);
   const retentionSince = new Date(Date.now() - getFairConfig().retentionDays * 24 * 60 * 60 * 1000).toISOString();
   db.prepare("DELETE FROM fair_reminders WHERE created_at < ?").run(retentionSince);
   database = db;
@@ -90,6 +106,7 @@ function rowToRecord(row: Record<string, unknown>): ReminderListRecord {
     companyName: row.company_name as string | null,
     industrySlug: row.industry_slug as string,
     industryLabel: row.industry_label as string,
+    heardAboutUs: row.heard_about_us as string | null,
     source: row.source as string,
     eventName: row.event_name as string,
     consentAcceptedAt: row.consent_accepted_at as string,
@@ -113,11 +130,11 @@ export function createReminder(record: ReminderRecord) {
   const db = getDatabase();
   db.prepare(`
     INSERT INTO fair_reminders (
-      submission_id, email, company_name, industry_slug, industry_label, source, event_name,
+      submission_id, email, company_name, industry_slug, industry_label, heard_about_us, source, event_name,
       consent_accepted_at, consent_version, utm_source, utm_medium, utm_campaign, ip_hash,
       user_agent, email_status, created_at, updated_at
     ) VALUES (
-      @submissionId, @email, @companyName, @industrySlug, @industryLabel, @source, @eventName,
+      @submissionId, @email, @companyName, @industrySlug, @industryLabel, @heardAboutUs, @source, @eventName,
       @consentAcceptedAt, @consentVersion, @utmSource, @utmMedium, @utmCampaign, @ipHash,
       @userAgent, 'pending', @createdAt, @createdAt
     )

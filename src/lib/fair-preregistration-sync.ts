@@ -23,6 +23,7 @@ export async function syncFairPreregistration(record: ReminderRecord): Promise<S
         companyName: record.companyName,
         industrySlug: record.industrySlug,
         industryLabel: record.industryLabel,
+        heardAboutUs: record.heardAboutUs,
         eventName: record.eventName,
         consentAcceptedAt: record.consentAcceptedAt,
         sourceCreatedAt: record.createdAt,

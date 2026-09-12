@@ -5,12 +5,12 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 
 import { serviceCategories } from "@/lib/service-categories";
 
-type Values = { email: string; companyName: string; industry: string; consent: boolean };
+type Values = { email: string; companyName: string; industry: string; heardAboutUs: string; consent: boolean };
 type Errors = Partial<Record<keyof Values, string>>;
 type ApiResponse = { ok: true } | { ok: false; errors?: Errors; message?: string };
 
-const initialValues: Values = { email: "", companyName: "", industry: "", consent: false };
-const fieldOrder: Array<keyof Values> = ["email", "industry", "consent"];
+const initialValues: Values = { email: "", companyName: "", industry: "", heardAboutUs: "", consent: false };
+const fieldOrder: Array<keyof Values> = ["email", "industry", "heardAboutUs", "consent"];
 const technicalError = "Připomenutí se nepodařilo odeslat. Zkontrolujte připojení a zkuste to prosím znovu.";
 
 function validate(values: Values): Errors {
@@ -47,10 +47,11 @@ export function FairReminderForm() {
   const [submissionId, setSubmissionId] = useState(createSubmissionId);
   const emailRef = useRef<HTMLInputElement>(null);
   const industryRef = useRef<HTMLSelectElement>(null);
+  const heardAboutUsRef = useRef<HTMLInputElement>(null);
   const consentRef = useRef<HTMLInputElement>(null);
   const successRef = useRef<HTMLHeadingElement>(null);
   const shouldFocusEmailRef = useRef(false);
-  const refs = { email: emailRef, industry: industryRef, consent: consentRef, companyName: emailRef };
+  const refs = { email: emailRef, industry: industryRef, heardAboutUs: heardAboutUsRef, consent: consentRef, companyName: emailRef };
 
   useEffect(() => {
     if (status === "success") successRef.current?.focus();
@@ -154,6 +155,11 @@ export function FairReminderForm() {
         <option value="">Vyberte obor</option>{serviceCategories.map((category) => <option key={category.slug} value={category.slug}>{category.label}</option>)}
       </select>
       {errors.industry && <p id="industry-error" className="mt-1.5 text-xs text-red-500">{errors.industry}</p>}
+    </div>
+    <div className="mt-4">
+      <label htmlFor="heardAboutUs" className="text-base font-bold text-brand-navy">Odkud jste se o nás dozvěděli? <span className="font-normal text-brand-muted">(nepovinné)</span></label>
+      <input ref={heardAboutUsRef} id="heardAboutUs" name="heardAboutUs" type="text" maxLength={300} value={values.heardAboutUs} onChange={(event) => updateValue("heardAboutUs", event.target.value)} placeholder="Např. doporučení, Google, sociální sítě nebo akce" aria-invalid={Boolean(errors.heardAboutUs)} aria-describedby={errors.heardAboutUs ? "heardAboutUs-error" : undefined} className={inputClass(Boolean(errors.heardAboutUs))} />
+      {errors.heardAboutUs && <p id="heardAboutUs-error" className="mt-1.5 text-xs text-red-500">{errors.heardAboutUs}</p>}
     </div>
     <div className={`mt-5 ${errors.consent ? "rounded-xl border border-red-400 p-3" : ""}`}>
       <div className="flex items-start gap-3"><input ref={consentRef} id="consent" name="consent" type="checkbox" checked={values.consent} onChange={(event) => updateValue("consent", event.target.checked)} required aria-required="true" aria-invalid={Boolean(errors.consent)} aria-describedby={errors.consent ? "consent-error" : undefined} className={`mt-1 h-5 w-5 shrink-0 rounded ${errors.consent ? "border-red-400 focus-visible:ring-red-300" : "border-brand-border"} text-brand-primary focus-visible:ring-4`} />

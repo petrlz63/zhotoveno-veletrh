@@ -4,6 +4,7 @@ export type ReminderFields = {
   email: string;
   companyName: string;
   industry: string;
+  heardAboutUs: string;
   consent: boolean;
   submissionId: string;
   utmSource: string | null;
@@ -11,7 +12,7 @@ export type ReminderFields = {
   utmCampaign: string | null;
 };
 
-export type ReminderFieldErrors = Partial<Record<"email" | "companyName" | "industry" | "consent", string>>;
+export type ReminderFieldErrors = Partial<Record<"email" | "companyName" | "industry" | "heardAboutUs" | "consent", string>>;
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -31,6 +32,7 @@ export function readReminderFields(payload: Record<string, unknown>): ReminderFi
     email: readString(payload.email, 254).toLowerCase(),
     companyName: readString(payload.companyName, 150),
     industry: readString(payload.industry, 80),
+    heardAboutUs: readString(payload.heardAboutUs, 301),
     consent: payload.consent === true,
     submissionId: readString(payload.submissionId, 64),
     utmSource: readNullableString(payload.utmSource, 120),
@@ -44,6 +46,7 @@ export function validateReminderFields(fields: ReminderFields): ReminderFieldErr
   if (!fields.email) errors.email = "Zadejte pracovní e-mail.";
   else if (!emailPattern.test(fields.email)) errors.email = "Zadejte e-mail ve správném formátu.";
   if (!serviceCategoriesBySlug.has(fields.industry as ServiceCategorySlug)) errors.industry = "Vyberte hlavní obor ze seznamu.";
+  if (fields.heardAboutUs.length > 300) errors.heardAboutUs = "Odpověď může mít nejvýše 300 znaků.";
   if (!fields.consent) errors.consent = "Potvrďte prosím souhlas se zpracováním údajů.";
   return errors;
 }
