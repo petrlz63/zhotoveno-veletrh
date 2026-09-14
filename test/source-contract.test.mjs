@@ -29,9 +29,12 @@ test("reminder endpoint validates and does not return cached responses", async (
 
 test("email continues registration without a sign-in token and contains each standard destination", async () => {
   const source = await read("src/lib/reminder-mailer.ts");
+  const route = await read("src/app/api/pripomenuti/route.ts");
   assert.match(source, /Dokončit registraci na webu/);
   assert.match(source, /Stáhnout v App Store/);
   assert.match(source, /Stáhnout na Google Play/);
+  assert.match(source, /getFairRegistrationUrl\(urls\.web, industrySlug, toEmail\)/);
+  assert.match(route, /industrySlug: reminder\?\.industrySlug \?\? fields\.industry/);
   assert.doesNotMatch(source, /otpCode|one-time token|managementToken/);
 });
 

@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const delivery = await sendReminderEmail({ toEmail: fields.email });
+    const delivery = await sendReminderEmail({ toEmail: fields.email, industrySlug: reminder?.industrySlug ?? fields.industry });
     if (!delivery.ok) {
       markReminderFailed(fields.submissionId, delivery.errorCode, new Date().toISOString());
       return response({ ok: false, message: "Připomenutí se nepodařilo odeslat. Zkontrolujte připojení a zkuste to prosím znovu." }, 502);

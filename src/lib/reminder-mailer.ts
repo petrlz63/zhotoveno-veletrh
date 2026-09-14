@@ -1,8 +1,9 @@
 import { getReminderUrls, getFairConfig } from "@/lib/fair-config";
+import { getFairRegistrationUrl } from "@/lib/fair-registration-url";
 
 const BREVO_EMAIL_URL = "https://api.brevo.com/v3/smtp/email";
 
-type SendReminderInput = { toEmail: string };
+type SendReminderInput = { toEmail: string; industrySlug: string };
 type SendReminderResult = { ok: true; providerMessageId: string | null } | { ok: false; errorCode: "configuration" | "rejected" | "unavailable" };
 
 function htmlEscape(value: string) {
@@ -15,9 +16,9 @@ export function buildReminderText(urls: NonNullable<ReturnType<typeof getReminde
     "",
     "děkujeme, že jste se u nás zastavili. První krok registrace do Zhotoveno B2B máte uložený.",
     "",
-    "Otevřete Zhotoveno na webu nebo v mobilní aplikaci a přihlaste se pomocí svého e-mailu. Přihlášení potvrdíte jednorázovým kódem, který vám zašleme e-mailem.",
+    "Kliknutím níže otevřete pokračování registrace na webu a doplňte údaje o firmě, své obory a specializace.",
     "",
-    "Po přihlášení stejným e-mailem poznáme, že v registraci pokračujete. Provedeme vás vytvořením firemního profilu, ve kterém doplníte údaje o firmě, své obory a specializace.",
+    "Na konci registrace ověříte svůj e-mail jednorázovým kódem, který vám zašleme e-mailem.",
     "",
     `Dokončit registraci na webu: ${urls.web}`,
     `Stáhnout v App Store: ${urls.appStore}`,
@@ -44,8 +45,8 @@ export function buildReminderHtml(urls: NonNullable<ReturnType<typeof getReminde
       <div style="padding:32px;font-size:16px;line-height:1.65;">
         <p style="margin:0 0 18px;">Dobrý den,</p>
         <p style="margin:0 0 18px;">děkujeme, že jste se u nás zastavili. První krok registrace do Zhotoveno B2B máte uložený.</p>
-        <p style="margin:0 0 18px;">Otevřete Zhotoveno na webu nebo v mobilní aplikaci a přihlaste se pomocí svého e-mailu. Přihlášení potvrdíte jednorázovým kódem, který vám zašleme e-mailem.</p>
-        <p style="margin:0 0 24px;">Po přihlášení stejným e-mailem poznáme, že v registraci pokračujete. Provedeme vás vytvořením firemního profilu, ve kterém doplníte údaje o firmě, své obory a specializace.</p>
+        <p style="margin:0 0 18px;">Kliknutím níže otevřete pokračování registrace na webu a doplňte údaje o firmě, své obory a specializace.</p>
+        <p style="margin:0 0 24px;">Na konci registrace ověříte svůj e-mail jednorázovým kódem, který vám zašleme e-mailem.</p>
         <p style="margin:0 0 24px;"><a href="${webUrl}" style="display:inline-block;background:#0969f3;border-radius:12px;color:#ffffff;font-weight:700;padding:14px 22px;text-decoration:none;">Dokončit registraci na webu</a></p>
         <p style="margin:0 0 8px;"><a href="${appStoreUrl}" style="color:#075bd8;font-weight:700;">Stáhnout v App Store</a></p>
         <p style="margin:0 0 24px;"><a href="${googlePlayUrl}" style="color:#075bd8;font-weight:700;">Stáhnout na Google Play</a></p>
@@ -57,11 +58,12 @@ export function buildReminderHtml(urls: NonNullable<ReturnType<typeof getReminde
 </body></html>`;
 }
 
-export async function sendReminderEmail({ toEmail }: SendReminderInput): Promise<SendReminderResult> {
+export async function sendReminderEmail({ toEmail, industrySlug }: SendReminderInput): Promise<SendReminderResult> {
   const fairConfig = getFairConfig();
   const urls = getReminderUrls();
   if (fairConfig.mockDelivery) return { ok: true, providerMessageId: null };
   if (!urls) return { ok: false, errorCode: "configuration" };
+  const emailUrls = { ...urls, web: getFairRegistrationUrl(urls.web, industrySlug, toEmail) };
 
   const apiKey = process.env.BREVO_API_KEY?.trim();
   const senderEmail = process.env.BREVO_SENDER_EMAIL?.trim();
@@ -85,8 +87,8 @@ export async function sendReminderEmail({ toEmail }: SendReminderInput): Promise
         } : {}),
         to: [{ email: toEmail }],
         subject: "Dokončete registraci do Zhotoveno B2B",
-        textContent: buildReminderText(urls),
-        htmlContent: buildReminderHtml(urls),
+        textContent: buildReminderText(emailUrls),
+        htmlContent: buildReminderHtml(emailUrls),
       }),
     });
     if (!response.ok) return { ok: false, errorCode: response.status >= 500 || response.status === 429 ? "unavailable" : "rejected" };
