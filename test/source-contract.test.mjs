@@ -38,6 +38,25 @@ test("email continues registration without a sign-in token and contains each sta
   assert.doesNotMatch(source, /otpCode|one-time token|managementToken/);
 });
 
+test("email delivery is provider-swappable and Resend adds no tracking fields", async () => {
+  const source = await read("src/lib/reminder-mailer.ts");
+  const provider = await read("src/lib/email-provider.ts");
+  assert.match(source, /sendEmailViaProvider\(emailProvider/);
+  assert.match(provider, /config\.provider === "resend"/);
+  assert.match(provider, /https:\/\/api\.resend\.com\/emails/);
+  assert.match(provider, /https:\/\/api\.brevo\.com\/v3\/smtp\/email/);
+  assert.match(provider, /authorization: `Bearer \$\{config\.apiKey\}`/);
+  assert.match(provider, /from: formatEmailAddress\(config\.senderEmail, config\.senderName\)/);
+  assert.match(source, /to: \[toEmail\]/);
+  assert.match(source, /text: buildReminderText\(emailUrls\)/);
+  assert.match(source, /html: buildReminderHtml\(emailUrls\)/);
+  const resendBranch = provider.slice(
+    provider.indexOf('if (config.provider === "resend")'),
+    provider.indexOf("return fetch(BREVO_EMAIL_URL"),
+  );
+  assert.doesNotMatch(resendBranch, /contactPixelTrackingConsent|htmlContent:|textContent:|sendibt/i);
+});
+
 test("accepted preregistration is copied through the protected PostgreSQL sync", async () => {
   const route = await read("src/app/api/pripomenuti/route.ts");
   const sync = await read("src/lib/fair-preregistration-sync.ts");

@@ -1,7 +1,6 @@
 import { getReminderUrls, getFairConfig } from "@/lib/fair-config";
 import { getFairRegistrationUrl } from "@/lib/fair-registration-url";
-
-const BREVO_EMAIL_URL = "https://api.brevo.com/v3/smtp/email";
+import { getEmailProviderConfig, sendEmailViaProvider } from "@/lib/email-provider";
 
 type SendReminderInput = { toEmail: string; industrySlug: string };
 type SendReminderResult = { ok: true; providerMessageId: string | null } | { ok: false; errorCode: "configuration" | "rejected" | "unavailable" };
@@ -65,35 +64,26 @@ export async function sendReminderEmail({ toEmail, industrySlug }: SendReminderI
   if (!urls) return { ok: false, errorCode: "configuration" };
   const emailUrls = { ...urls, web: getFairRegistrationUrl(urls.web, industrySlug, toEmail) };
 
-  const apiKey = process.env.BREVO_API_KEY?.trim();
-  const senderEmail = process.env.BREVO_SENDER_EMAIL?.trim();
-  const senderName = process.env.BREVO_SENDER_NAME?.trim();
-  if (!apiKey || !senderEmail || !senderName) return { ok: false, errorCode: "configuration" };
+  const emailProvider = getEmailProviderConfig();
+  if (!emailProvider) return { ok: false, errorCode: "configuration" };
 
   const abortController = new AbortController();
   const timeout = setTimeout(() => abortController.abort(), 10_000);
   try {
-    const response = await fetch(BREVO_EMAIL_URL, {
-      method: "POST",
-      headers: { "content-type": "application/json", accept: "application/json", "api-key": apiKey },
-      signal: abortController.signal,
-      body: JSON.stringify({
-        sender: { email: senderEmail, name: senderName },
-        ...(process.env.BREVO_REPLY_TO_EMAIL?.trim() ? {
-          replyTo: {
-            email: process.env.BREVO_REPLY_TO_EMAIL.trim(),
-            ...(process.env.BREVO_REPLY_TO_NAME?.trim() ? { name: process.env.BREVO_REPLY_TO_NAME.trim() } : {}),
-          },
-        } : {}),
-        to: [{ email: toEmail }],
-        subject: "Dokončete registraci do Zhotoveno B2B",
-        textContent: buildReminderText(emailUrls),
-        htmlContent: buildReminderHtml(emailUrls),
-      }),
-    });
+    const response = await sendEmailViaProvider(emailProvider, {
+      to: [toEmail],
+      subject: "Dokončete registraci do Zhotoveno B2B",
+      text: buildReminderText(emailUrls),
+      html: buildReminderHtml(emailUrls),
+    }, { signal: abortController.signal });
     if (!response.ok) return { ok: false, errorCode: response.status >= 500 || response.status === 429 ? "unavailable" : "rejected" };
-    const payload = await response.json().catch(() => null) as { messageId?: unknown } | null;
-    return { ok: true, providerMessageId: typeof payload?.messageId === "string" ? payload.messageId.slice(0, 255) : null };
+    const payload = await response.json().catch(() => null) as { id?: unknown; messageId?: unknown } | null;
+    const providerMessageId = typeof payload?.id === "string"
+      ? payload.id
+      : typeof payload?.messageId === "string"
+        ? payload.messageId
+        : null;
+    return { ok: true, providerMessageId: providerMessageId?.slice(0, 255) ?? null };
   } catch {
     return { ok: false, errorCode: "unavailable" };
   } finally {

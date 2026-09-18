@@ -20,7 +20,21 @@ has_value() {
   [ -n "$value" ] && [ "$value" != '""' ] && [ "$value" != "''" ]
 }
 
-for key in FAIR_EVENT_NAME FAIR_ORIGIN FAIR_IP_HASH_SECRET FAIR_ADMIN_KEY_HASH FAIR_ADMIN_SESSION_SECRET BREVO_API_KEY BREVO_SENDER_EMAIL BREVO_SENDER_NAME NEXT_PUBLIC_ZHOTOVENO_WEB_URL NEXT_PUBLIC_APP_STORE_URL NEXT_PUBLIC_GOOGLE_PLAY_URL NEXT_PUBLIC_PRIVACY_URL; do
+read_env_value() {
+  key=$1
+  grep -E "^[[:space:]]*(export[[:space:]]+)?${key}=" "$env_file" | tail -n 1 | cut -d= -f2- | tr -d '\"' | tr -d "'[:space:]" || true
+}
+
+for key in FAIR_EVENT_NAME FAIR_ORIGIN FAIR_IP_HASH_SECRET FAIR_ADMIN_KEY_HASH FAIR_ADMIN_SESSION_SECRET EMAIL_PROVIDER NEXT_PUBLIC_ZHOTOVENO_WEB_URL NEXT_PUBLIC_APP_STORE_URL NEXT_PUBLIC_GOOGLE_PLAY_URL NEXT_PUBLIC_PRIVACY_URL; do
+  has_value "$key" || fail "$key must be present and non-empty in env file"
+done
+
+case "$(read_env_value EMAIL_PROVIDER)" in
+  resend) provider_prefix=RESEND ;;
+  brevo) provider_prefix=BREVO ;;
+  *) fail "EMAIL_PROVIDER must be resend or brevo" ;;
+esac
+for key in "${provider_prefix}_API_KEY" "${provider_prefix}_SENDER_EMAIL" "${provider_prefix}_SENDER_NAME"; do
   has_value "$key" || fail "$key must be present and non-empty in env file"
 done
 

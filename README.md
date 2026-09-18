@@ -23,7 +23,8 @@ Vzor obsahuje `.env.example`.
 - `FAIR_IP_HASH_SECRET`: HMAC tajemství pro anti-spam hash IP adresy.
 - `FAIR_ADMIN_KEY_HASH`, `FAIR_ADMIN_SESSION_SECRET`: přístup do administrace.
 - `FAIR_POSTGRES_SYNC_URL`, `FAIR_POSTGRES_SYNC_TOKEN`: chráněný serverový import předregistrace do full webu; výpadek synchronizace neblokuje uložení do SQLite ani připomínací e-mail.
-- `BREVO_*`: odesílatel a credentials pro reálnou e-mailovou dopravu.
+- `EMAIL_PROVIDER=resend|brevo`: aktivní adaptér e-mailové dopravy.
+- `RESEND_*` / `BREVO_*`: odesílatel a credentials pro zvolený adaptér.
 - `NEXT_PUBLIC_*_URL`: běžné odkazy v e-mailu, bez tokenu nebo OTP.
 
 Kontakty se automaticky mažou po 12 měsících. Dřívější výmaz po odvolání souhlasu je nutné vyřídit přes `gdpr@zhotoveno.cz` a provést v interní správě dat.

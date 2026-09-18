@@ -36,7 +36,10 @@ export function getProductionConfigError() {
   if (!getAdminConfig().keyHash || !getAdminConfig().sessionSecret) return "missing fair admin configuration";
   if (!getReminderUrls()) return "invalid reminder URL configuration";
   if (getFairPreregistrationSyncConfigError()) return "invalid preregistration sync configuration";
-  if (!readEnvironment("BREVO_API_KEY") || !readEnvironment("BREVO_SENDER_EMAIL") || !readEnvironment("BREVO_SENDER_NAME")) return "missing mail configuration";
+  const provider = readEnvironment("EMAIL_PROVIDER");
+  if (provider !== "resend" && provider !== "brevo") return "invalid mail provider configuration";
+  const prefix = provider === "resend" ? "RESEND" : "BREVO";
+  if (!readEnvironment(`${prefix}_API_KEY`) || !readEnvironment(`${prefix}_SENDER_EMAIL`) || !readEnvironment(`${prefix}_SENDER_NAME`)) return "missing mail configuration";
   return null;
 }
 
